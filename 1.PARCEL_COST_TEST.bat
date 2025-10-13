@@ -1,0 +1,1 @@
+java -jar target/deliverysystem-0.0.1-SNAPSHOT.jar PARCEL_COST_TEST
