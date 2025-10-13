@@ -1,4 +1,4 @@
-#### Delivery Cost Estimation with Offers
+### Delivery Cost Estimation with Offers
 ##### <u>Software Stack:</u>
 	java-version: java 21
 	database: uses in-memory H2 DB  
@@ -7,7 +7,7 @@
 ##### <u>Build:</u>
 	cmd>git clone https://github.com/siripuramjagadishraj1/deliverysystem.git
 	cmd>mvn clean install
-	Check ---> deliverysystem/target/site/jacoco/index.html (For coverage and Jaccoo reports) 92% coverage.
+	Check ---> deliverysystem/target/site/jacoco/index.html (92% code coverage)
 ##### <u>Run (Windows bat-scripts) :</u>
 	Mode-1: You are required to build a command line application to estimate the total delivery cost of each package with an offer code 
 	cmd>start 1.PARCEL_COST_TEST.bat
