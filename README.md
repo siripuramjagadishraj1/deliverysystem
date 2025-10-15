@@ -23,10 +23,11 @@
 	click: connect
 	
 	run below queries(all) >
-	SELECT id,package_name,weight,distance,start_delivery_time,delivery_minutes,end_delivery_time,status FROM PARCEL_PACKAGE where status = 'READY' order by weight desc,distance desc;
-	SELECT id,package_name,weight,distance,start_delivery_time,delivery_minutes,end_delivery_time,status  FROM PARCEL_PACKAGE where status = 'PICKED_UP' order by weight desc,distance desc;
-	SELECT id,package_name,weight,distance,start_delivery_time,delivery_minutes,end_delivery_time,status  FROM PARCEL_PACKAGE where status = 'DELIVERED' order by end_delivery_time desc,mapped_vehicle  desc;
+	SELECT id,package_name,weight,distance,start_delivery_time,delivery_minutes,end_delivery_time,status,mapped_vehicle FROM PARCEL_PACKAGE where status = 'READY' order by weight desc,distance desc;
+	SELECT id,package_name,weight,distance,start_delivery_time,delivery_minutes,end_delivery_time,status,mapped_vehicle   FROM PARCEL_PACKAGE where status = 'PICKED_UP' order by weight desc,distance desc;
+	SELECT id,package_name,weight,distance,start_delivery_time,delivery_minutes,end_delivery_time,status,mapped_vehicle   FROM PARCEL_PACKAGE where status = 'DELIVERED' order by end_delivery_time desc,mapped_vehicle  desc;
 	select * from vehicles;
+
 	
 	Note: 
 	1. Vehicle status changes from AVAILABLE-NOT_AVILABLE and vis-a-vis.
