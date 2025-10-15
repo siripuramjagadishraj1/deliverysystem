@@ -1,7 +1,9 @@
 package com.everest.deliverysystem.simulator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,93 +49,106 @@ public class ParcleDeliverySimulatior {
 	
 	private Scanner scanner = new Scanner(System.in);
 	
-	public void estimateParcelCost() throws BusinessException {
-		 System.out.println("====1. ESTIMATE TOTAL DELIVERY COST OF PARCEL TEST====");
-		 String base_delivery_cost  = envConstantsService.findActiveEnvProperties().stream().filter(e-> PARCEL_BASE_FARE.equalsIgnoreCase(e.getEnvKey()) ).findAny().get().getEnvValue();
-		 System.out.println("base_delivery_cost(100): "+base_delivery_cost);
-		 
-		 System.out.print("no_of_packges(3): ");
-		 int no_of_packges = scanner.nextInt();
-		 scanner.nextLine();
-		 
-		String[] packages = new String[no_of_packges];
-		parcleWtDistanceInfo(packages);
-		for(int i=0;i< packages.length;i++) {
-			System.out.print("Package-"+i+": (pkg_id1, pkg_weight1_in_kg,distance1_in_km,offer_code1)-->"+packages[i]+":");
-			packages[i] = scanner.nextLine();
-		}
-		parcelManagementRepository.deleteAll();
-		registerParcelsInDB(packages);
-		System.out.println("====OUTPUT====");
-		List<ParcelPackage> packagesList = parcelManagementService.findAll();
-		for(int i=0;i<packagesList.size();i++) {
-			ParcelPackage each = packagesList.get(i);
-			System.out.println("Package["+i+"]==> id: "+ each.getPackageName()+", discountAmt: "+each.getDiscountAmount()+", TotalCost: "+ (each.getNoDiscoutPackageCost()-each.getDiscountAmount()) );
+	public void estimateParcelCost() {
+		try {
+			System.out.println("====1. ESTIMATE TOTAL DELIVERY COST OF PARCEL TEST====");
+			 String base_delivery_cost  = envConstantsService.findActiveEnvProperties().stream().filter(e-> PARCEL_BASE_FARE.equalsIgnoreCase(e.getEnvKey()) ).findAny().get().getEnvValue();
+			 System.out.println("base_delivery_cost(100): "+base_delivery_cost);
+			 
+			 System.out.print("no_of_packges(3): ");
+			 int no_of_packges = scanner.nextInt();
+			 scanner.nextLine();
+			 
+			String[] packages = new String[no_of_packges];
+			parcleWtDistanceInfo(packages);
+			for(int i=0;i< packages.length;i++) {
+				System.out.print("Package-"+i+": (pkg_id1, pkg_weight1_in_kg,distance1_in_km,offer_code1)-->"+packages[i]+":");
+				packages[i] = scanner.nextLine();
+			}
+			parcelManagementRepository.deleteAll();
+			registerParcelsInDB(packages);
+			System.out.println("====OUTPUT====");
+			List<ParcelPackage> packagesList = parcelManagementService.findAll();
+			for(int i=0;i<packagesList.size();i++) {
+				ParcelPackage each = packagesList.get(i);
+				System.out.println("Package["+i+"]==> id: "+ each.getPackageName()+", discountAmt: "+each.getDiscountAmount()+", TotalCost: "+ (each.getNoDiscoutPackageCost()-each.getDiscountAmount()) );
+			}
+		} catch (BusinessException e) {
+			LOGGER.error("Error: {}",e.getMessage());
 		}
 	}
 
-	public void estimateParcelDeliveryTime() throws BusinessException {
-		System.out.println("====2. ESTIMATE PARCEL DELIVERY TIMES TEST====");
-		String base_delivery_cost  = envConstantsService.findActiveEnvProperties().stream().filter(e-> PARCEL_BASE_FARE.equalsIgnoreCase(e.getEnvKey()) ).findAny().get().getEnvValue();
-		System.out.println("base_delivery_cost(100): "+base_delivery_cost);
-		 
-		System.out.print("no_of_packges(5): ");
-		int no_of_packges = scanner.nextInt();
-		scanner.nextLine();
-		
-		String[] packages = new String[no_of_packges];
-		parcleWtDistanceInfoForDeliveryEstimate(packages);
-		for(int i=0;i<packages.length;i++) {
-			System.out.print("Package-"+i+": (pkg_id1, pkg_weight1_in_kg,distance1_in_km,offer_code1)"+packages[i]+":");
-			packages[i] = scanner.nextLine();
-		}
-		registerParcelsInDB(packages);
-		
-		System.out.print("no_of_vehicles(2): ");
-		int no_of_vehicles = scanner.nextInt();
-		scanner.nextLine();
-		
-		System.out.print("max_speed(70): ");
-		double max_speed = scanner.nextDouble();
-		scanner.nextLine();
-		
-		System.out.print("max_carriable_weight(200): ");
-		double max_carriable_weight = scanner.nextDouble();
-		scanner.nextLine();
-		vehicleManagementRepository.deleteAll();
-		registerRandomVehiclesInDB(no_of_vehicles, max_speed, max_carriable_weight);
-		
-		for(int k=1;k<3;k++) {
-			System.out.println("===="+k+". ITERATION====");
-			vehicleManagementRepository.updateStatus(VehicleStatus.AVAILABLE.name());
+	public void estimateParcelDeliveryTime() {
+		try {
+			System.out.println("====2. ESTIMATE PARCEL DELIVERY TIMES TEST====");
+			parcelManagementRepository.deleteAll();
+			vehicleManagementRepository.deleteAll();
 			
-			vehicleParcelMapperService.mapAllParcelsToVehicles();
-			List<ParcelPackage> packagesList = parcelManagementService.findByStatusOrderByWeightDescDistanceDesc(ParcelStaus.PICKED_UP.name()).get();
-			for(int i=0;i<packagesList.size();i++) {
-				ParcelPackage each = packagesList.get(i);
-				System.out.println(
-						"Package["+i+"]==> "+each.getId()+" - "
-								+  "id: "+ each.getPackageName()
-								//+", discountAmt: "+each.getDiscountAmount()
-								+", TotCost: "+ (each.getNoDiscoutPackageCost()-each.getDiscountAmount())
-								+", assignedVehicle: "+ each.getMappedVehicle()
-								+", weight: "+ each.getWeight() 
-								+", deliverTimeHrs: "+ ((double)each.getDeliveryMinutes()/60d)
-								+", endDeliveryTime: "+ each.getEndDeliveryTime());
-				
+			String base_delivery_cost  = envConstantsService.findActiveEnvProperties().stream().filter(e-> PARCEL_BASE_FARE.equalsIgnoreCase(e.getEnvKey()) ).findAny().get().getEnvValue();
+			System.out.println("base_delivery_cost(100): "+base_delivery_cost);
+			 
+			System.out.print("no_of_packges(5): ");
+			int no_of_packges = scanner.nextInt();
+			scanner.nextLine();
+			
+			String[] packages = new String[no_of_packges];
+			parcleWtDistanceInfoForDeliveryEstimate(packages);
+			for(int i=0;i<packages.length;i++) {
+				System.out.print("Package-"+i+": (pkg_id1, pkg_weight1_in_kg,distance1_in_km,offer_code1)"+packages[i]+":");
+				packages[i] = scanner.nextLine();
 			}
-			List<Vehicles> vehicles = vehicleManagementService.findAll();
-			vehicles.forEach(e->{
-				System.out.println("Vehicle ==>"+"["+e.getId()+":"
-													+e.getAvailableTime()+":"
-													+e.getStatus()+":"
-													+"]");
-			});
+			registerParcelsInDB(packages);
 			
+			System.out.print("no_of_vehicles(2): ");
+			int no_of_vehicles = scanner.nextInt();
+			scanner.nextLine();
+			
+			System.out.print("max_speed(70): ");
+			double max_speed = scanner.nextDouble();
+			scanner.nextLine();
+			
+			System.out.print("max_carriable_weight(200): ");
+			double max_carriable_weight = scanner.nextDouble();
+			scanner.nextLine();
+			registerRandomVehiclesInDB(no_of_vehicles, max_speed, max_carriable_weight);
+			List<ParcelPackage> packagesList = new ArrayList<>();
+			int k=1;
+			do {
+				System.out.println("===="+(k++)+". ITERATION====");
+				vehicleManagementRepository.updateStatus(VehicleStatus.AVAILABLE.name());
+				
+				vehicleParcelMapperService.mapAllParcelsToVehicles();
+				packagesList = parcelManagementService.findByStatusOrderByWeightDescDistanceDesc(ParcelStaus.PICKED_UP.name()).get();
+				packagesList = packagesList.stream().sorted( (a,b)-> a.getStartDeliveryTime().toString().compareTo(b.getStartDeliveryTime().toString()) ).collect(Collectors.toList());
+				for(int i=0;i<packagesList.size();i++) {
+					ParcelPackage each = packagesList.get(i);
+					System.out.println(
+							"Package["+i+"]==> "+each.getId()+" - "
+									+  "id: "+ each.getPackageName()
+									//+", discountAmt: "+each.getDiscountAmount()
+									+", TotCost: "+ (each.getNoDiscoutPackageCost()-each.getDiscountAmount())
+									+", assignedVehicle: "+ each.getMappedVehicle()
+									+", weight: "+ each.getWeight() 
+									+", deliverTimeHrs: "+ ((double)each.getDeliveryMinutes()/60d)
+									+", startTIme: "+ each.getStartDeliveryTime() 
+									+", endDeliveryTime: "+ each.getEndDeliveryTime());
+					
+				}
+				List<Vehicles> vehicles = vehicleManagementService.findAll();
+				vehicles.forEach(e->{
+					System.out.println("Vehicle ==>"+"["+e.getId()+":"
+														+e.getAvailableTime()+":"
+														+e.getStatus()+":"
+														+"]");
+				});
+				
+			}while(packagesList.size()<no_of_packges);
+		} catch (BusinessException e) {
+			LOGGER.error("Error: {}",e.getMessage());
 		}
 	}
 	
-	public void simulateParcelDelivery() throws BusinessException{
+	public void simulateParcelDelivery() {
 		parcelManagementRepository.deleteAll();
 		LOGGER.info("===1. SIMULATION OF PARCEL CREATION===");
 		new Thread(()->{//100 Parcels
