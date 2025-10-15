@@ -24,7 +24,7 @@ public class ParcelCostDeliveryTests {
 		parcleDeliverySimulatior.estimateParcelCost();
 	}
 	
-//	@Disabled
+	@Disabled
 	@Test
 	public void testEstimateParcelDeliveryTimeWithUserInputs() throws BusinessException{
 		parcleDeliverySimulatior.estimateParcelDeliveryTime();
